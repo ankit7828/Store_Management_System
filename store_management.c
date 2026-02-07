@@ -3,20 +3,20 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-char name[100];
-char add[100];
-long long int num;
-int count = 0;
-int bill = 0;
-int total = 0;
+char name[100]; // name of customer
+char add[100]; // address of customer
+long long int num; // contact number of customer
+int count = 0; // number of products in cart
+int bill = 0; // total bill before discount
+int total = 0; // total bill after discount
 
-int sn[100], s = 0;
-char product[100][50];
+int sn[100], s = 0; // serial number for each product
+char product[100][50]; // store product information each row is a product
 int p = 0;
-int quentity[100], q = 0;
-int price[100], pr = 0;
+int quentity[100], q = 0; // quentity of each product purchased
+int price[100], pr = 0; // price of each product purchased
 
-typedef struct data
+typedef struct data // format in which purchase data is stored
 {
     char name[50];
     char address[100];
@@ -25,33 +25,32 @@ typedef struct data
     int day, month, year, hr, min, sec;
 } sdata;
 
-void display()
+void display() // print the purchase history
 {
     FILE *fp;
     fp = fopen("storedata.txt", "r");
-    sdata s1;
-    int j;
+    sdata s1; // store and display one record at a time
     printf("\nName                  Address                         Number                Price        Date       Time\n");
     printf("------------------------------------------------------------------------------------------------------------\n");
-    while (fread(&s1, sizeof(sdata), 1, fp))
+    while (fread(&s1, sizeof(sdata), 1, fp)) // read binary data from file 
     {
         printf("%-20s| %-30s| %-20lld| RS.%-5d| %d-%d-%d | %d:%d:%d |\n", s1.name, s1.address, s1.number, s1.total_bill, s1.day, s1.month, s1.year, s1.hr, s1.min, s1.sec);
         printf("------------------------------------------------------------------------------------------------------------\n");
     }
     fclose(fp);
 }
-void appened()
+void appened() // add a new record manually in file
 {
     sdata *s;
     FILE *fp;
-    int n, i, j;
+    int n, i;
     printf("enter how many records you want to enter : ");
     scanf("%d", &n);
-    s = (sdata *)calloc(n, sizeof(sdata));
-    fp = fopen("storedata.txt", "a");
+    s = (sdata *)calloc(n, sizeof(sdata)); // Allocates memory for n structures
+    fp = fopen("storedata.txt", "a"); // Opens file in append mode
     for (i = 0; i < n; i++)
     {
-        fflush(stdin);
+        fflush(stdin); // clear input buffer and hndle Undefined behavior in C
         printf("\nEnter name : ");
         gets(s[i].name);
         fflush(stdin);
@@ -64,34 +63,32 @@ void appened()
         scanf("%d", &s[i].total_bill);
         printf("enter day month year hour min sec in sequence : ");
         scanf("%d%d%d%d%d%d", &s[i].day, &s[i].month, &s[i].year, &s[i].hr, &s[i].min, &s[i].sec);
-        fwrite(&s[i], sizeof(sdata), 1, fp);
+        fwrite(&s[i], sizeof(sdata), 1, fp); // Appends record at end of file
     }
     printf("\nRecord added successfully\n");
     fclose(fp);
 }
-void noofrecords()
+void noofrecords() // Count number of records in file or total purchases.
 {
-    sdata *s;
     FILE *fp;
     fp = fopen("storedata.txt", "r");
-    fseek(fp, 0, SEEK_END);
-    int n = ftell(fp) / sizeof(sdata);
+    fseek(fp, 0, SEEK_END); // Moves file pointer at the last byte
+    int n = ftell(fp) / sizeof(sdata); // returns current file position
     printf("\nnumber of records are : %d ", n);
     fclose(fp);
 }
-void search()
+void search() // Search customer by name
 {
     FILE *fp;
     fp = fopen("storedata.txt", "r");
     sdata s1;
-    int j;
     char ser_name[100];
-    int flag = 0;
+    int flag = 0; // indicate status
     fflush(stdin);
     printf("enter name to search : ");
     gets(ser_name);
     fflush(stdin);
-    while (fread(&s1, sizeof(sdata), 1, fp))
+    while (fread(&s1, sizeof(sdata), 1, fp)) // read binary data from file 
     {
         if (strcmp(s1.name, ser_name) == 0)
         {
@@ -102,32 +99,28 @@ void search()
             printf("------------------------------------------------------------------------------------------------------------\n");
         }
     }
-    if (flag = 1)
-    {
-    }
-    else
-    {
-        printf("\nRocord not found\n");
+    if (flag == 0){
+        printf("\nRecord not found\n");
     }
     fclose(fp);
 }
-void update()
+void update() // Modify existing customer record
 {
     FILE *fp, *fp2;
-    fp = fopen("storedata.txt", "r");
-    fp2 = fopen("temp2.txt", "w");
+    fp = fopen("storedata.txt", "r"); // Read from original file
+    fp2 = fopen("temp2.txt", "w"); // Write updated data to temporary file
     sdata s1;
-    int j;
-    int flag = 0;
+    int flag = 0; // to check whether the record was found
     fflush(stdin);
     printf("enter name to update : ");
     char ser_name[100];
     gets(ser_name);
     fflush(stdin);
-    while (fread(&s1, sizeof(sdata), 1, fp))
+    while (fread(&s1, sizeof(sdata), 1, fp)) // Reads each record from original file
     {
         if (strcmp(s1.name, ser_name) == 0)
         {
+            flag = 1;
             fflush(stdin);
             printf("\nEnter new address : ");
             gets(s1.address);
@@ -143,8 +136,7 @@ void update()
     }
     fclose(fp);
     fclose(fp2);
-    if (flag = 1)
-    {
+    if (flag == 1){
         fp = fopen("storedata.txt", "w");
         fp2 = fopen("temp2.txt", "r");
         while (fread(&s1, sizeof(sdata), 1, fp2))
@@ -154,20 +146,16 @@ void update()
         fclose(fp);
         fclose(fp2);
         printf("\nData updated successfully\n");
-    }
-    else
-    {
+    }else{
         printf("\nrocord not found\n");
     }
 }
-void delete()
+void delete() // Delete a customer record
 {
     FILE *fp, *fp2;
     fp = fopen("storedata.txt", "r");
     fp2 = fopen("temp2.txt", "w");
-    sdata s1;
-    int j;
-    int roll;
+    sdata s1; // Stores one record at a time
     int flag = 0;
     fflush(stdin);
     printf("enter name to delete : ");
@@ -176,19 +164,15 @@ void delete()
     fflush(stdin);
     while (fread(&s1, sizeof(sdata), 1, fp))
     {
-        if (strcmp(s1.name, ser_name) == 0)
-        {
+        if (strcmp(s1.name, ser_name) == 0){
             flag = 1;
-        }
-        else
-        {
+        }else{
             fwrite(&s1, sizeof(sdata), 1, fp2);
         }
     }
     fclose(fp);
     fclose(fp2);
-    if (flag = 1)
-    {
+    if (flag == 1){
         fp = fopen("storedata.txt", "w");
         fp2 = fopen("temp2.txt", "r");
         while (fread(&s1, sizeof(sdata), 1, fp2))
@@ -198,25 +182,22 @@ void delete()
         fclose(fp);
         fclose(fp2);
         printf("\nRecord deleted successfully\n");
-    }
-    else
-    {
+    }else{
         printf("\nrecord not found\n");
     }
 }
-void sort_total_on_screen()
+void sort_total_on_screen() // Sort by total bill in descending order
 {
     sdata *s, s1;
     FILE *fp;
     fp = fopen("storedata.txt", "r");
     int i, j;
-    fseek(fp, 0, SEEK_END);
-    int n = ftell(fp) / sizeof(sdata);
+    fseek(fp, 0, SEEK_END); // Moves pointer to end of file
+    int n = ftell(fp) / sizeof(sdata); // total file size in bytes
     s = (sdata *)calloc(n, sizeof(sdata));
-    rewind(fp);
-    for (i = 0; i < n; i++)
-    {
-        fread(&s[i], sizeof(sdata), 1, fp);
+    rewind(fp); // Moves file pointer back to start of file
+    for (i = 0; i < n; i++){
+        fread(&s[i], sizeof(sdata), 1, fp); // Reads all records from file into memory array s
     }
     for (i = 0; i < n; i++)
     {
@@ -239,22 +220,22 @@ void sort_total_on_screen()
         fclose(fp);
     }
 }
-void sort_total_in_file()
+void sort_total_in_file() // Rewrite the original file with sorted data
 {
     sdata *s, s1;
     FILE *fp;
     fp = fopen("storedata.txt", "r");
     int i, j;
-    fseek(fp, 0, SEEK_END);
-    int n = ftell(fp) / sizeof(sdata);
+    fseek(fp, 0, SEEK_END); // Moves pointer to end of file
+    int n = ftell(fp) / sizeof(sdata); // total file size in bytes
     s = (sdata *)calloc(n, sizeof(sdata));
-    rewind(fp);
+    rewind(fp); // Moves file pointer back to start of file
     for (i = 0; i < n; i++)
     {
-        fread(&s[i], sizeof(sdata), 1, fp);
+        fread(&s[i], sizeof(sdata), 1, fp); // Reads all records from file into memory array s
     }
     fclose(fp);
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++) // sorting logic simple selection sort
     {
         for (j = i + 1; j < n; j++)
         {
@@ -269,16 +250,16 @@ void sort_total_in_file()
     fp = fopen("storedata.txt", "w");
     printf("\nName                  Address                         Number                Price        Date       Time\n");
     printf("------------------------------------------------------------------------------------------------------------\n");
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++) // Displays each sorted record and Writes it back to the file in sorted order
     {
         printf("%-20s| %-30s| %-20lld| RS.%-5d| %d-%d-%d | %d:%d:%d |\n", s[i].name, s[i].address, s[i].number, s[i].total_bill, s[i].day, s[i].month, s[i].year, s[i].hr, s[i].min, s[i].sec);
         printf("------------------------------------------------------------------------------------------------------------\n");
-        fwrite(&s[i], sizeof(sdata), 1, fp);
+        fwrite(&s[i], sizeof(sdata), 1, fp); 
     }
     fclose(fp);
 }
-void sort_name_on_screen()
-{
+void sort_name_on_screen() // Display sorted records on screen File data is NOT modified
+{ 
     sdata *s, s1;
     FILE *fp;
     fp = fopen("storedata.txt", "r");
@@ -315,7 +296,7 @@ void sort_name_on_screen()
 // for fruits
 void Fruits()
 {
-    int fc, que;
+    int fc, que; // Displays available fruits Shows price per kg fc = fruit code , que = quantity
     printf("\n============================================== Greate choice select a fruit =============================================\n");
     printf("\n101) Mango-------------------------------------1kg----------------------------------RS.200");
     printf("\n102) Apple-------------------------------------1kg----------------------------------RS.250");
@@ -324,91 +305,60 @@ void Fruits()
     printf("\n105) Papaya------------------------------------1kg----------------------------------RS.60");
     printf("\nplease choose your product code : ");
     scanf("%d", &fc);
-    if (fc == 101)
-    {
+
+    if (fc == 101){
         printf("\nMango is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Mango");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 200;
-        pr++;
-        bill = bill + que * 200;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Mango"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 200; // Stores item price
+        bill = bill + que * 200; // Updates total bill
         count++;
-    }
-    else if (fc == 102)
-    {
+    }else if (fc == 102){
         printf("\nApple is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Apple");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 250;
-        pr++;
-        bill = bill + que * 250;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Apple"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 250; // Stores item price
+        bill = bill + que * 250; // Updates total bill
         count++;
-    }
-    else if (fc == 103)
-    {
+    }else if (fc == 103){
         printf("\nBanana is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Banana");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 50;
-        pr++;
-        bill = bill + que * 50;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Banana"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 50; // Stores item price
+        bill = bill + que * 50; // Updates total bill
         count++;
-    }
-    else if (fc == 104)
-    {
+    }else if (fc == 104){
         printf("\nPineapple is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Pineapple");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 70;
-        pr++;
-        bill = bill + que * 70;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Pineapple"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 70; // Stores item price
+        bill = bill + que * 70; // Updates total bill
         count++;
-    }
-    else if (fc == 105)
-    {
+    }else if (fc == 105){
         printf("\nPapaya is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Papaye");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 60;
-        pr++;
-        bill = bill + que * 60;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Papaya"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 60; // Stores item price
+        bill = bill + que * 60; // Updates total bill
         count++;
-    }
-    else
-    {
+    }else{
         printf("\ninvalid choice\n");
     }
 }
 // for vegetables
 void Vegetables()
 {
-    int vc, que;
+    int vc, que; // Displays available vegetables Shows price per kg vc = vegetables code , que = quantity
     printf("\n============================================== Greate choice select a vegetable =============================================\n");
     printf("\n201) Tomato------------------------------------1kg-----------------------------------RS.60");
     printf("\n202) Spinach-----------------------------------1kg-----------------------------------RS.20");
@@ -421,187 +371,118 @@ void Vegetables()
     {
         printf("\nTomato is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Tomato");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 60;
-        pr++;
-        bill = bill + que * 60;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Tomatp"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 60; // Stores item price
+        bill = bill + que * 60; // Updates total bill
         count++;
-    }
-    else if (vc == 202)
-    {
+    }else if (vc == 202){
         printf("\nSpinach is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Spinach");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 20;
-        pr++;
-        bill = bill + que * 20;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Spinach"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 20; // Stores item price
+        bill = bill + que * 20; // Updates total bill
         count++;
-    }
-    else if (vc == 203)
-    {
+    }else if (vc == 203){
         printf("\nBeetroot is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Beetroot");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 50;
-        pr++;
-        bill = bill + que * 50;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "BeetRoot"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 50; // Stores item price
+        bill = bill + que * 50; // Updates total bill
         count++;
-    }
-    else if (vc == 204)
-    {
+    }else if (vc == 204){
         printf("\nPotato is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Potato");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 35;
-        pr++;
-        bill = bill + que * 35;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Potato"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 35; // Stores item price
+        bill = bill + que * 35; // Updates total bill
         count++;
-    }
-    else if (vc == 205)
-    {
+    }else if (vc == 205){
         printf("\nBrinjal is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Brinjal");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 45;
-        pr++;
-        bill = bill + que * 45;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Brinjal"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 45; // Stores item price
+        bill = bill + que * 45; // Updates total bill
         count++;
-    }
-    else
-    {
+    }else{
         printf("\ninvalid choice\n");
     }
 }
 // for Cosmaticks
 void Cosmaticks()
 {
-    int cc, que;
+    int cc, que; // Displays available cosmaticks Shows price per kg cc = cosmaticks code , que = quantity
     printf("\n============================================== Greate choice select a cosmatic =============================================\n");
-    printf("\n301) Kajal-------------------------------------1per/peice------------------------------RS.50");
-    printf("\n302) Lipstic-----------------------------------1per/peice------------------------------RS.20");
-    printf("\n303) Nailpolish--------------------------------1per/peice------------------------------RS.30");
-    printf("\n304) Facewash----------------------------------1per/peice------------------------------RS.70");
-    printf("\n305) Lotion------------------------------------1per/peice------------------------------RS.120");
+    printf("\n301) Kajal-------------------------------------1per/piece------------------------------RS.50");
+    printf("\n302) Lipstic-----------------------------------1per/piece------------------------------RS.20");
+    printf("\n303) Nailpolish--------------------------------1per/piece------------------------------RS.30");
+    printf("\n304) Facewash----------------------------------1per/piece------------------------------RS.70");
+    printf("\n305) Lotion------------------------------------1per/piece------------------------------RS.120");
     printf("\nplease choose your product code : ");
     scanf("%d", &cc);
     if (cc == 301)
     {
         printf("\nKajal is a good choice how many Kajals you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Kajal");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 50;
-        pr++;
-        bill = bill + que * 50;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Kajal"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 50; // Stores item price
+        bill = bill + que * 50; // Updates total bill
         count++;
-    }
-    else if (cc == 302)
-    {
+    }else if (cc == 302){
         printf("\nLipstic is a good choice how many Lipstics you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Lipstic");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 20;
-        pr++;
-        bill = bill + que * 20;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Lipstics"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 20; // Stores item price
+        bill = bill + que * 20; // Updates total bill
         count++;
-    }
-    else if (cc == 303)
-    {
+    }else if (cc == 303){
         printf("\nNailpolish is a good choice how many Nailpolishes you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Nailpolish");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 30;
-        pr++;
-        bill = bill + que * 30;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "NailPolish"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 30; // Stores item price
+        bill = bill + que * 30; // Updates total bill
         count++;
-    }
-    else if (cc == 304)
-    {
+    }else if (cc == 304){
         printf("\nFacewash is a good choice how many Facewash you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Facewash");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 70;
-        pr++;
-        bill = bill + que * 70;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "FaceWadh"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 70; // Stores item price
+        bill = bill + que * 70; // Updates total bill
         count++;
-    }
-    else if (cc == 305)
-    {
+    }else if (cc == 305){
         printf("\nLotion is a good choice how many Lotions you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Lotion");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 120;
-        pr++;
-        bill = bill + que * 120;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Lotion"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 120; // Stores item price
+        bill = bill + que * 120; // Updates total bill
         count++;
-    }
-    else
-    {
+    }else{
         printf("\ninvalid choice\n");
     }
 }
 // for masala powders
 void Masala_Powder()
 {
-    int mc, que;
+    int mc, que; // Displays available masala Shows price per kg mc = masala code , que = quantity
     printf("\n============================================== Greate choice select a masala =============================================\n");
     printf("\n401) Turmeric----------------------------------1kg------------------------------RS.200");
     printf("\n402) Ginger------------------------------------1kg------------------------------RS.350");
@@ -610,84 +491,52 @@ void Masala_Powder()
     printf("\n405) Veg---------------------------------------1kg------------------------------RS.60");
     printf("\nplease choose your product code : ");
     scanf("%d", &mc);
-    if (mc == 401)
-    {
+    if (mc == 401){
         printf("\nTurmeric is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Turmeric");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 200;
-        pr++;
-        bill = bill + que * 200;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Turmeric"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 200; // Stores item price
+        bill = bill + que * 200; // Updates total bill
         count++;
-    }
-    else if (mc == 402)
-    {
+    }else if (mc == 402){
         printf("\nGinger is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Ginger");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 350;
-        pr++;
-        bill = bill + que * 350;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Ginger"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 350; // Stores item price
+        bill = bill + que * 350; // Updates total bill
         count++;
-    }
-    else if (mc == 403)
-    {
+    }else if (mc == 403){
         printf("\nChilli is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Chilli");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 100;
-        pr++;
-        bill = bill + que * 100;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Chilli"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 100; // Stores item price
+        bill = bill + que * 100; // Updates total bill
         count++;
-    }
-    else if (mc == 404)
-    {
+    }else if (mc == 404){
         printf("\nCoriender is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Coriender");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 140;
-        pr++;
-        bill = bill + que * 140;
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "Coriender"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 140; // Stores item price
+        bill = bill + que * 140; // Updates total bill
         count++;
-    }
-    else if (mc == 405)
-    {
+    }else if (mc == 405){
         printf("\nVeg is a good choice how many kgs you want : ");
         scanf("%d", &que);
-        sn[s] = s + 1;
-        s++;
-        strcpy(product[p], "Veg");
-        p++;
-        quentity[q] = que;
-        q++;
-        price[pr] = que * 60;
-        pr++;
-        bill = bill + que * 60;
-
+        sn[s] = ++s; // store serial number
+        strcpy(product[p++], "veg"); // store product name
+        quentity[q++] = que; // store quantity in kg
+        price[pr++] = que * 60; // Stores item price
+        bill = bill + que * 60; // Updates total bill
         count++;
-    }
-    else
-    {
+    }else{
         printf("\ninvalid choice\n");
     }
 }
@@ -702,8 +551,7 @@ void store_menu()
     int ch;
     printf("\n\nEnter your choice : ");
     scanf("%d", &ch);
-    switch (ch)
-    {
+    switch (ch){
     case 1:
         Fruits();
         break;
@@ -725,23 +573,21 @@ int main(int argc, char const *argv[])
 {
     int ch, shop;
     int ch2;
-    time_t t;
-    t = time(NULL);
-    struct tm tm = *localtime(&t);
+    time_t t; // data type defined in <time.h>
+    t = time(NULL); // returns the current system time
+    struct tm tm = *localtime(&t); // converts raw seconds into human-readable date & time
     printf("\n================================================ WELCOME TO AJ&S STORES ================================================\n");
     printf("\nWe are a small team that Provide our customers with the freshest, organically grown fruits, vegetables and spices also we \nprovide cosmaticks for your skin which is purely natural. Offer foods without artificial colors, flavors, or additives.\nSell earth-friendly cleansers; pure, natural supplements; and gentle,cruelty-free body care products. Support organic \nfarms that keep our earth and water pure.");
     printf("\n\nPRESS 1 TO SHOP");
     printf("\nPRESS 0 TO EXIT\n");
     scanf("%d", &ch);
-    while (1)
-    {
+    while (1){
         printf("\nif you want to continue shopping press       : 1.");
         printf("\nif you want to see your bill press           : 2.");
         printf("\nif you want to check History and data press  : 3");
         printf("\nif you want to exit press                    : 0\n");
         scanf("%d", &shop);
-        switch (shop)
-        {
+        switch (shop){
         case 1:
             store_menu();
             break;
